@@ -13,8 +13,11 @@
 #include <mysql.h>
 
 static void
-fct0(void)
+fct0(const char* host)
 {
+	//---Check arguments---//
+	assert(NULL	!= host);
+
 	//---Initialize the library---//
 	assert(0	== mysql_library_init(0, NULL, NULL));
 	assert(0	== mysql_thread_init());
@@ -24,7 +27,7 @@ fct0(void)
 	assert(&mysql	== mysql_init(&mysql));
 
 	//---Connect---//
-	assert(&mysql	== mysql_real_connect(&mysql, "192.168.1.74", "cedric", "password", NULL, 0, NULL, 0));
+	assert(&mysql	== mysql_real_connect(&mysql, host, "cedric", "password", NULL, 0, NULL, 0));
 
 	//---Fetch the database names---//
 	MYSQL_RES*	myres;
@@ -61,7 +64,9 @@ extern int
 main(int argc, char* argv[])
 {
 	printf("%s started\n", __func__);
-	fct0();
+	assert(2	== argc);
+	const char*	host	= argv[1];
+	fct0(host);
 	printf("%s terminated\n", __func__);
 	return EXIT_SUCCESS;
 }
