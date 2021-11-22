@@ -1,0 +1,46 @@
+name: build & check the application
+on:
+  push:
+    branches:
+      - ci
+jobs:
+  ubuntu-build:
+    runs-on: ubuntu-latest
+    steps:
+      #---Fetch & run the MariaDB script---#
+      - name: Fetch & run the MariaDB script
+        run: |
+          sudo apt-get -qqy update
+          sudo apt-get -qqy install curl ca-certificates apt-transport-https
+          curl -LsS https://r.mariadb.com/downloads/mariadb_repo_setup | sudo bash -s -- --skip-maxscale
+
+      #---Install packages---#
+      - name: Install packages
+        run: |
+          sudo apt-get -qqy update
+          sudo apt-get -qqy install mariadb-server mariadb-client
+
+      #---Check MariaDB Server Process Status---#
+      - name: Check MariaDB Server Process Status
+        run: sudo systemctl status mariadb.service
+
+      #---Create a user (using client)---#
+      - name: Create a user (using client)
+        run: echo "GRANT ALL PRIVILEGES ON *.* TO 'cedric'@'%' IDENTIFIED BY 'password' WITH GRANT OPTION;" | sudo mysql
+
+      #---Checkout current repository---#
+      - name: checkout
+        uses: actions/checkout@v2
+
+      #---Install packages---#
+      - name: Install packages
+        run: |
+          sudo apt-get -qqy update
+          sudo apt-get -qqy install libmariadb-dev
+
+      #---Build & run the application---#
+      - name: Build & run the application
+        run: |
+          cd 02-app
+          /bin/bash ./github-linux_build.sh
+          ./app localhost
